@@ -1,0 +1,4 @@
+srv_name;srv_ip;srv_dns;srv_check_type;srv_snmp_comunity;srv_desc;srv_tag;srv_hostgroup;srv_template
+server1;1.2.3.9;server1.weissearena.ch;agent;;das ist eine beschreibung;SLA:Gold,backup:daily;hostgroup1;Template Module Zabbix agent
+switch1;1.2.3.1;switch1.weissearena.ch;snmp;public;das ist eine beschreibung;pikett:5x8;hostgroup2;Template Module Generic SNMP
+switch2;1.2.3.2;switch2.weissearena.ch;snmp;;das ist eine beschreibung;SLA:Silver,backup:weekly;hostgroup1,hostgroup2;Template Module Generic SNMP

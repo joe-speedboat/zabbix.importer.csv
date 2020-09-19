@@ -1,0 +1,8 @@
+[zabbix]
+localhost gather_facts=False
+
+[zabbix:vars]
+login_user = 'ansible'
+login_password  = '...123ABC123abc...'
+server_url = https://zabbix.domain.ch/zabbix
+

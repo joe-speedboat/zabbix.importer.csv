@@ -1,0 +1,28 @@
+- name: zabbix host configuration
+  hosts: zabbix
+  connection: local
+  gather_facts: no
+  vars_prompt:
+    - name: csv_path
+      prompt: "CSV Filename "
+      private: no
+      default: 'import-hosts.csv.demo'
+    - name: recreate_hosts
+      prompt: "Recreate hosts: "
+      private: no
+      default: false
+    - name: maintain_hostgroups
+      prompt: "Maintain Hostgroups (create if they not exist): "
+      private: no
+      default: false
+  tasks:
+  - read_csv:
+      path: "{{ csv_path }}"
+      delimiter: ';'
+    register: csv_file
+  - name: loop the csv file
+    include_tasks: import-hosts-loop.yml
+    loop: "{{ csv_file.list }}"
+    loop_control:
+      loop_var: csv
+
