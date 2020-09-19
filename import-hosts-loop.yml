@@ -3,7 +3,7 @@
 - name: set facts
   set_fact:
     srv_templates: "{{ csv.srv_template.split(',') }}"
-    # host_groups: "{{ csv.srv_hostgroup.split(',')  }} + [ 'Ansible Managed' ]"
+    # host_groups: "{{ csv.srv_hostgroup.split(',')  }} + [ 'csv' ]"
     host_groups: "{{ csv.srv_hostgroup.split(',')  }}"
     srv_tags: "{{ csv.srv_tag.split(',') | default('')}}"
     interface_type: "{{ csv.srv_type | default('agent') }}"
@@ -38,13 +38,14 @@
     when: srv_templates[0] == ''
   - set_fact: 
       srv_tags_dict: 
-        - tag: ansibleManaged
+        - tag: csv
           value: ''
   - name: split all tags into needed dict format
     set_fact:
       srv_tags_dict: "{{ srv_tags_dict|default([]) + [{'tag': item.split(':')[0],'value': item.split(':')[1]|default('')}] }}"
     with_items:
     - "{{ srv_tags }}"
+    when: srv_tags[0] != ''
   - name: "Configure agent host {{ csv.srv_name }}"
     local_action:
       module: community.zabbix.zabbix_host
@@ -75,13 +76,14 @@
     when: srv_templates[0] == ''
   - set_fact: 
       srv_tags_dict: 
-        - tag: ansibleManaged
+        - tag: csv
           value: ''
   - name: split all tags into needed dict format
     set_fact:
       srv_tags_dict: "{{ srv_tags_dict|default([]) + [{'tag': item.split(':')[0],'value': item.split(':')[1]|default('')}] }}"
     with_items:
     - "{{ srv_tags }}"
+    when: srv_tags[0] != ''
   - name: "Configure snmp host {{ csv.srv_name }}"
     local_action:
       module: community.zabbix.zabbix_host
