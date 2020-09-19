@@ -5,6 +5,7 @@ Setup
 ----
 ```
 curl -L ansible.bitbull.ch | bash
+pip3 install zabbix-api zabbix-cli
 ansible-galaxy collection install community.zabbix
 cd /etc/ansible/projects/
 git clone git@github.com:joe-speedboat/zabbix.importer.csv.git
