@@ -10,11 +10,11 @@
     - name: recreate_hosts
       prompt: "Recreate hosts: "
       private: no
-      default: false
+      default: 0
     - name: maintain_hostgroups
       prompt: "Maintain Hostgroups (create if they not exist): "
       private: no
-      default: false
+      default: 0
   tasks:
   - read_csv:
       path: "{{ csv_path }}"
