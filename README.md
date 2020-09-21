@@ -29,11 +29,11 @@ CSV FORMAT
   * srv_desc
     * optional
   * srv_tag
-    * Always in: nsible Managed
+    * Always in: csv:{{ csv_path }}
     * optional 
-      eg: tag1,tag2:99,backup:false
+      eg: tag1,tag2:99,tag3:value3
   * srv_hostgroup
-    * Always in: Ansible Managed
+    * Always in: csv
     * optional
       eg: Group1,Group2,Group3,...
   * srv_template

@@ -1,17 +1,25 @@
-- name: print vars
-  debug: var=csv
-- name: set facts
+---
+- name: set default variables
+  set_fact:
+    default_host_type: 'agent'
+    default_agent_template: 'Template OS Windows by Zabbix agent'
+    default_snmp_template: 'Template OS Windows by Zabbix agent'
+    default_snmp_community: '{$SNMP_COMMUNITY}'
+
+- name: prepare host facts
   set_fact:
     srv_templates: "{{ csv.srv_template.split(',') }}"
     host_groups: "{{ csv.srv_hostgroup.split(',')  }} + [ 'csv' ]"
-    srv_tags: "{{ csv.srv_tag.split(',') | default('')}}"
-    interface_type: "{{ csv.srv_type | default('agent') }}"
-    snmp_community: "{{ csv.srv_snmp_community | default('{$SNMP_COMMUNITY}', true) }}"
+    srv_tags: "{{ csv.srv_tag.split(',')}}"
+    interface_type: "{{ csv.srv_type  | default(default_host_type) }}"
+    snmp_community: "{{ csv.srv_snmp_community | default(default_snmp_community, true) }}"
+
 - name: set csv filename tag
   set_fact: 
     srv_tags_dict: 
       - tag: csv
         value: "{{ csv_path }}"
+
 - name: split all tags into needed dict format
   set_fact:
     srv_tags_dict: "{{ srv_tags_dict|default([]) + [{'tag': item.split(':')[0],'value': item.split(':')[1]|default('')}] }}"
@@ -19,16 +27,33 @@
   - "{{ srv_tags }}"
   when: srv_tags[0]
 
-- name: Create host groups
-  local_action:
-    module: community.zabbix.zabbix_group
-    validate_certs: no
-    server_url: '{{ server_url }}'
-    login_user: '{{ login_user }}'
-    login_password: '{{ login_password }}'
-    state: present
-    host_groups: '{{ host_groups }}'
-  when: maintain_hostgroups|bool
+- name: set default  template to {{ default_agent_template }}
+  set_fact:
+    srv_templates: "{{ default_agent_template }}"
+  when: srv_templates[0] == '' and csv.srv_check_type == 'agent'
+
+- name: set default  template to {{ default_agent_template }}
+  set_fact:
+    srv_templates: "{{ default_snmp_template }}"
+  when: srv_templates[0] == '' and csv.srv_check_type == 'snmp'
+
+- name: print verbose output for {{ csv.srv_name }}
+  vars:
+    msg: |
+      csv: {{ csv }}
+      snmp_community: {{ snmp_community }}
+      snmp_community: {{ interface_type }}
+      srv_tags: {{ srv_tags }}
+      host_groups: {{ host_groups }}
+      srv_templates: {{ srv_templates }}
+  debug:  
+     msg: "{{ msg.split('\n') }}"
+  when: verbose_output|bool
+
+- name: print debug output for {{ csv.srv_name }}
+  debug:
+    var: hostvars[inventory_hostname]
+  when: debug_output|bool
 
 - name: "Delete host {{ csv.srv_name }}"
   local_action:
@@ -42,10 +67,6 @@
   when: recreate_hosts|bool
 
 - block:
-  - name: use windows agent template if none is given
-    set_fact:
-      srv_templates: "['Template OS Windows by Zabbix agent']"
-    when: srv_templates[0] == ''
   - name: "Configure agent host {{ csv.srv_name }}"
     local_action:
       module: community.zabbix.zabbix_host
@@ -61,19 +82,14 @@
       status: enabled
       state: present
       interfaces:
-      - type: 1
-        main: 1
-        useip: 1
+      - type: '1'
+        main: '1'
+        useip: '1'
         ip: '{{ csv.srv_ip }}'
         dns: '{{ csv.srv_dns }}'
   when: csv.srv_check_type == 'agent'   
-        
 
 - block:
-  - name: use generic snmp template if none is given
-    set_fact:
-      srv_templates: "['Template Module Generic SNMP']"
-    when: srv_templates[0] == ''
   - name: "Configure snmp host {{ csv.srv_name }}"
     local_action:
       module: community.zabbix.zabbix_host
@@ -89,15 +105,15 @@
       status: enabled
       state: present
       interfaces:
-      - type: 2
-        main: 1
-        useip: 1
+      - type: '2'
+        main: '1'
+        useip: '1'
         ip: '{{ csv.srv_ip }}'
         dns: '{{ csv.srv_dns }}'
-        port: 161
+        port: '161'
         details:
-          version: 2
-          bulk: 1
+          version: '2'
+          bulk: '1'
           community: "{{ snmp_community }}"
   when: csv.srv_check_type == 'snmp' 
-
+...
