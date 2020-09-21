@@ -6,6 +6,15 @@
     debug_output: False
     verbose_output: True
     maintain_hostgroups: True
+
+    default_host_type: 'agent'
+    default_all_hostgroup: 'csv'
+    default_all_hosts_tag: 'csv'
+    default_all_hosts_tag_value: "{{ csv_path }}"
+    default_agent_template: 'Template OS Windows by Zabbix agent'
+    default_snmp_template: 'Template OS Windows by Zabbix agent'
+    default_snmp_community: '{$SNMP_COMMUNITY}'
+
   vars_prompt:
     - name: csv_path
       prompt: "CSV Filename "

@@ -1,15 +1,8 @@
 ---
-- name: set default variables
-  set_fact:
-    default_host_type: 'agent'
-    default_agent_template: 'Template OS Windows by Zabbix agent'
-    default_snmp_template: 'Template OS Windows by Zabbix agent'
-    default_snmp_community: '{$SNMP_COMMUNITY}'
-
 - name: prepare host facts
   set_fact:
     srv_templates: "{{ csv.srv_template.split(',') }}"
-    host_groups: "{{ csv.srv_hostgroup.split(',')  }} + [ 'csv' ]"
+    host_groups: "{{ csv.srv_hostgroup.split(',')  + [ default_all_hostgroup ] }}"
     srv_tags: "{{ csv.srv_tag.split(',')}}"
     interface_type: "{{ csv.srv_type  | default(default_host_type) }}"
     snmp_community: "{{ csv.srv_snmp_community | default(default_snmp_community, true) }}"
@@ -17,8 +10,8 @@
 - name: set csv filename tag
   set_fact: 
     srv_tags_dict: 
-      - tag: csv
-        value: "{{ csv_path }}"
+      - tag: "{{ default_all_hosts_tag }}"
+        value: "{{ default_all_hosts_tag_value }}"
 
 - name: split all tags into needed dict format
   set_fact:
@@ -43,7 +36,7 @@
       csv: {{ csv }}
       snmp_community: {{ snmp_community }}
       snmp_community: {{ interface_type }}
-      srv_tags: {{ srv_tags }}
+      srv_tags_dict: {{ srv_tags_dict }}
       host_groups: {{ host_groups }}
       srv_templates: {{ srv_templates }}
   debug:  
