@@ -29,12 +29,12 @@
 
 - name: set default  template to {{ default_agent_template }}
   set_fact:
-    srv_templates: "[default_agent_template]"
+    srv_templates: "{{ default_agent_template }}"
   when: srv_templates[0] == '' and csv.srv_check_type == 'agent'
 
 - name: set default  template to {{ default_agent_template }}
   set_fact:
-    srv_templates: "[default_snmp_template]"
+    srv_templates: "{{ default_snmp_template }}"
   when: srv_templates[0] == '' and csv.srv_check_type == 'snmp'
 
 - name: print verbose output for {{ csv.srv_name }}
@@ -117,4 +117,3 @@
           community: "{{ snmp_community }}"
   when: csv.srv_check_type == 'snmp' 
 ...
-
