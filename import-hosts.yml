@@ -1,4 +1,3 @@
----
 - name: zabbix host configuration
   hosts: zabbix
   connection: local
@@ -16,51 +15,14 @@
       prompt: "Maintain Hostgroups (create if they not exist): "
       private: no
       default: 0
-    - name: verbose_output
-      prompt: "Show vars used for host creation: "
-      private: no
-      default: 1
-    - name: debug_output
-      prompt: "Show all vars used: "
-      private: no
-      default: 0
   tasks:
   - read_csv:
       path: "{{ csv_path }}"
       delimiter: ';'
     register: csv_file
-
-  - name: create deduped list of hostgroups
-    block:
-    - set_fact: 
-        all_srv_hostgroups: []
-    - name: read all hostgroups from csv file {{ csv_path }}
-      set_fact: 
-        all_srv_hostgroups: "{{ all_srv_hostgroups +  csv.srv_hostgroup.split(',') }}"
-      loop: "{{ csv_file.list }}"
-      loop_control:
-        loop_var: csv
-    - name: deduplicate host groups from csv file {{ csv_path }}
-      set_fact:
-        all_srv_hostgroups: "{{ all_srv_hostgroups | unique }}"
-    - name: print all hostgroups
-      debug:
-        var: all_srv_hostgroups
-    - name: create hostgroups
-      local_action:
-        module: community.zabbix.zabbix_group
-        validate_certs: no
-        server_url: '{{ server_url }}'
-        login_user: '{{ login_user }}'
-        login_password: '{{ login_password }}'
-        state: present
-        host_groups: '{{ all_srv_hostgroups }}'
-    when: maintain_hostgroups|bool
-
-  - name: loop the csv file for host creation
-    include_tasks: import-hosts-csv-loop.yml
+  - name: loop the csv file
+    include_tasks: import-hosts-loop.yml
     loop: "{{ csv_file.list }}"
     loop_control:
       loop_var: csv
-...
 
