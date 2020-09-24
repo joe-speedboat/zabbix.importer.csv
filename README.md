@@ -28,20 +28,27 @@ CSV FORMAT
     * optional
   * srv_desc
     * optional
+      note: short names, no special chars
   * srv_tag
     * Always in: csv:{{ csv_path }}
     * optional 
       eg: tag1,tag2:99,tag3:value3
+      note: short names, no special chars
+  * srv_location
+    * optional
+      eg: LaaxRocksRz
+      note: short names, no special chars
   * srv_hostgroup
     * Always in: csv
     * optional
       eg: Group1,Group2,Group3,...
+      note: short names, no special chars
   * srv_template
     Zero or multiple Templates to link
     eg: TPL1,TPL2,TPL3,...
 
 ```
-srv_name;srv_ip;srv_dns;srv_check_type;srv_snmp_comunity;srv_desc;srv_tag;srv_hostgroup;srv_template
+srv_name;srv_ip;srv_dns;srv_check_type;srv_snmp_comunity;srv_desc;srv_tag;srv_location;srv_hostgroup;srv_template
 ```
 
 RUN
@@ -49,3 +56,4 @@ RUN
 ```
 ansible-playbook import-hosts.yml
 ```
+

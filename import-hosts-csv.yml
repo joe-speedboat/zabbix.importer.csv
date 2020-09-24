@@ -10,6 +10,7 @@
     default_host_type: 'agent'
     default_all_hostgroup: 'csv'
     default_all_hosts_tag: 'csv'
+    default_location: 'LocationMissing'
     default_all_hosts_tag_value: "{{ csv_path }}"
     default_agent_template: 'Template OS Windows by Zabbix agent'
     default_snmp_template: 'Template OS Windows by Zabbix agent'
@@ -34,15 +35,19 @@
     block:
     - set_fact: 
         all_srv_hostgroups: []
+        srv_location: ''
     - name: read all hostgroups from csv file {{ csv_path }}
       set_fact: 
-        all_srv_hostgroups: "{{ all_srv_hostgroups +  csv.srv_hostgroup.split(',') }}"
+        srv_location: "{{ csv.srv_location | default(default_location, true) }}"
+        all_srv_hostgroups: "{{ all_srv_hostgroups +  csv.srv_hostgroup.split(',') + [ srv_location ] }}"
       loop: "{{ csv_file.list }}"
       loop_control:
         loop_var: csv
     - name: deduplicate host groups from csv file {{ csv_path }}
       set_fact:
-        all_srv_hostgroups: "{{ all_srv_hostgroups | unique }}"
+        #all_srv_hostgroups: "{{ all_srv_hostgroups | unique }}"
+        all_srv_hostgroups: "{{ all_srv_hostgroups | unique + [ default_all_hostgroup ] }}"
+
     - name: print all hostgroups
       debug:
         var: all_srv_hostgroups

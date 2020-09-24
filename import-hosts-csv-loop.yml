@@ -2,7 +2,8 @@
 - name: prepare host facts
   set_fact:
     srv_templates: "{{ csv.srv_template.split(',') }}"
-    host_groups: "{{ csv.srv_hostgroup.split(',')  + [ default_all_hostgroup ] }}"
+    srv_location: "{{ csv.srv_location | default(default_location, true) }}"
+    host_groups: "{{ csv.srv_hostgroup.split(',')  + [ default_all_hostgroup ] + [ srv_location ] }}"
     srv_tags: "{{ csv.srv_tag.split(',')}}"
     interface_type: "{{ csv.srv_type  | default(default_host_type) }}"
     snmp_community: "{{ csv.srv_snmp_community | default(default_snmp_community, true) }}"
