@@ -13,7 +13,7 @@
     default_location: 'LocationMissing'
     default_all_hosts_tag_value: "{{ csv_path }}"
     default_agent_template: 'Template OS Windows by Zabbix agent'
-    default_snmp_template: 'Template OS Windows by Zabbix agent'
+    default_snmp_template: 'Template Module Generic SNMP'
     default_snmp_community: '{$SNMP_COMMUNITY}'
 
   vars_prompt:
