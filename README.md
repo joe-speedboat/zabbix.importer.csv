@@ -34,10 +34,11 @@ CSV FORMAT
     * optional 
       eg: tag1,tag2:99,tag3:value3
       note: short names, no special chars
-            if alert=none: srv_location will be modified from srv_location to noAlert/srv_location
+            if alert:none -> srv_location will be modified from srv_location to noAlert/srv_location or Alert/srv_location 
+            they get asked on run:  maintain_alert_tags -> no_alert_tag -> no_alert_location_prefix, alert_location_prefix
   * srv_location
     * optional
-      eg: LaaxRocksRz
+      eg: StGallen
       note: short names, no special chars
   * srv_hostgroup
     * Always in: csv
@@ -47,6 +48,7 @@ CSV FORMAT
   * srv_template
     Zero or multiple Templates to link
     eg: TPL1,TPL2,TPL3,...
+    default templates are predefined in .yml
 
 ```
 srv_name;srv_ip;srv_dns;srv_check_type;srv_snmp_comunity;srv_desc;srv_tag;srv_location;srv_hostgroup;srv_template

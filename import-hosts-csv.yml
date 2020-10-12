@@ -6,13 +6,6 @@
     debug_output: False
     verbose_output: True
 
-    # create location groups based on alert tag
-    # separate all hosts with no_alert_tag from productive ones
-    maintain_alert_tags: True
-    no_alert_tag: 'alert:none'
-    no_alert_location_prefix: 'noAlertLoc'
-    alert_location_prefix: 'Location'
-
     default_all_hostgroup: 'csv'
     default_all_hosts_tag: 'csv'
     default_all_hosts_tag_value: "{{ csv_path }}"
@@ -28,10 +21,30 @@
       prompt: "CSV Filename "
       private: no
       default: 'import-hosts.csv.demo'
+    - name: maintain_alert_tags
+      prompt: "Maintain Alert Tags with host_groups "
+      private: no
+      default: 1
     - name: recreate_hosts
       prompt: "Recreate hosts: "
       private: no
       default: 0
+
+    # create location groups based on alert tag
+    # separate all hosts with no_alert_tag from productive ones
+    - name: no_alert_tag
+      prompt: "No Alert Tag "
+      private: no
+      default: 'alert:none'
+    - name: no_alert_location_prefix
+      prompt: "prefix host_group for NON alerted hosts "
+      private: no
+      default: 'noAlertLoc'
+    - name: alert_location_prefix
+      prompt: "prefix host_group for ALERTED hosts "
+      private: no
+      default: 'Location'
+
   tasks:
   - read_csv:
       path: "{{ csv_path }}"
@@ -39,7 +52,7 @@
     register: csv_file
 
 
-  - name: create list of needed hostgroups when maintain_alert_tags: {{ maintain_alert_tags }}
+  - name: create list of needed hostgroups when maintain_alert_tags {{ maintain_alert_tags }}
     block:
     - set_fact: 
         all_csv_srv_hostgroups: []
@@ -61,7 +74,7 @@
 
 
 
-  - name: create list of needed hostgroups when maintain_alert_tags: {{ maintain_alert_tags }}
+  - name: create list of needed hostgroups when maintain_alert_tags {{ maintain_alert_tags }}
     block:
     - set_fact: 
         all_csv_srv_hostgroups: []
@@ -78,7 +91,7 @@
     - name: deduplicate host groups from csv file {{ csv_path }}
       set_fact:
         all_srv_hostgroups: "{{ all_srv_hostgroups | unique | map('regex_replace', '/$', '') | unique | list  + [ default_all_hostgroup ] + [ default_location ] }}"
-    when: not maintain_hostgroups|bool
+    when: not maintain_alert_tags|bool
 
 
 

@@ -16,7 +16,7 @@
     srv_location: "{{ default_location }}"
   when: csv.srv_location|length == 0
 
-- name: prepare host location groups for maintain_alert_tags: {{ maintain_alert_tags }}
+- name: prepare host location groups for maintain_alert_tags {{ maintain_alert_tags }}
   block:
   - name: process location fact for ALERTED hosts 
     set_fact:
@@ -29,7 +29,7 @@
     when: no_alert_tag in csv.srv_tag
   when: maintain_alert_tags|bool
 
-- name: process location fact for ALERTED hosts 
+- name: process location fact 
   set_fact:
     srv_location: "{{ srv_location }}"
   when: not maintain_alert_tags|bool
