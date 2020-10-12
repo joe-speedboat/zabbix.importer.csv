@@ -5,13 +5,20 @@
   vars:
     debug_output: False
     verbose_output: True
-    maintain_hostgroups: True
 
-    default_host_type: 'agent'
+    # create location groups based on alert tag
+    # separate all hosts with no_alert_tag from productive ones
+    maintain_alert_tags: True
+    no_alert_tag: 'alert:none'
+    no_alert_location_prefix: 'noAlertLoc'
+    alert_location_prefix: 'Location'
+
     default_all_hostgroup: 'csv'
     default_all_hosts_tag: 'csv'
-    default_location: 'LocationMissing'
     default_all_hosts_tag_value: "{{ csv_path }}"
+    default_location: 'LocationMissing'
+
+    default_host_type: 'agent'
     default_agent_template: 'Template OS Windows by Zabbix agent'
     default_snmp_template: 'Template Module Generic SNMP'
     default_snmp_community: '{$SNMP_COMMUNITY}'
@@ -31,36 +38,63 @@
       delimiter: ';'
     register: csv_file
 
-  - name: create deduped list of hostgroups
+
+  - name: create list of needed hostgroups when maintain_alert_tags: {{ maintain_alert_tags }}
     block:
     - set_fact: 
-        all_srv_hostgroups: []
-        srv_location: ''
+        all_csv_srv_hostgroups: []
     - name: read all hostgroups from csv file {{ csv_path }}
       set_fact: 
-        srv_location: "{{ csv.srv_location | default(default_location, true) }}"
-        all_srv_hostgroups: "{{ all_srv_hostgroups +  csv.srv_hostgroup.split(',') + [ srv_location ] }}"
+        all_csv_srv_hostgroups: "{{ all_csv_srv_hostgroups + csv.srv_hostgroup.split(',') + [ alert_location_prefix + '/' + csv.srv_location ] + [ no_alert_location_prefix + '/' + csv.srv_location ] }}"
       loop: "{{ csv_file.list }}"
       loop_control:
         loop_var: csv
+    - name: process all_srv_hostgroups list
+      set_fact:
+        all_srv_hostgroups: "{{ all_csv_srv_hostgroups + [ no_alert_location_prefix ] + [ alert_location_prefix ] }}"
+        
     - name: deduplicate host groups from csv file {{ csv_path }}
       set_fact:
-        #all_srv_hostgroups: "{{ all_srv_hostgroups | unique }}"
-        all_srv_hostgroups: "{{ all_srv_hostgroups | unique + [ default_all_hostgroup ] }}"
+        all_srv_hostgroups: "{{ all_srv_hostgroups | unique | map('regex_replace', '/$', '') | unique | list  + [ default_all_hostgroup ] + [ default_location ] +  [ alert_location_prefix + '/' + default_location ] +  [ no_alert_location_prefix + '/' + default_location ] }}"
+    when: maintain_alert_tags|bool
 
-    - name: print all hostgroups
-      debug:
-        var: all_srv_hostgroups
-    - name: create hostgroups
-      local_action:
-        module: community.zabbix.zabbix_group
-        validate_certs: no
-        server_url: '{{ server_url }}'
-        login_user: '{{ login_user }}'
-        login_password: '{{ login_password }}'
-        state: present
-        host_groups: '{{ all_srv_hostgroups }}'
-    when: maintain_hostgroups|bool
+
+
+
+  - name: create list of needed hostgroups when maintain_alert_tags: {{ maintain_alert_tags }}
+    block:
+    - set_fact: 
+        all_csv_srv_hostgroups: []
+    - name: read all hostgroups from csv file {{ csv_path }}
+      set_fact: 
+        all_csv_srv_hostgroups: "{{ all_csv_srv_hostgroups + csv.srv_hostgroup.split(',') + [ csv.srv_location ] }}"
+      loop: "{{ csv_file.list }}"
+      loop_control:
+        loop_var: csv
+    - name: process all_srv_hostgroups list
+      set_fact:
+        all_srv_hostgroups: "{{ all_csv_srv_hostgroups }}"
+        
+    - name: deduplicate host groups from csv file {{ csv_path }}
+      set_fact:
+        all_srv_hostgroups: "{{ all_srv_hostgroups | unique | map('regex_replace', '/$', '') | unique | list  + [ default_all_hostgroup ] + [ default_location ] }}"
+    when: not maintain_hostgroups|bool
+
+
+
+  - name: print all hostgroups
+    debug:
+      var: all_srv_hostgroups
+
+  - name: create hostgroups
+    local_action:
+      module: community.zabbix.zabbix_group
+      validate_certs: no
+      server_url: '{{ server_url }}'
+      login_user: '{{ login_user }}'
+      login_password: '{{ login_password }}'
+      state: present
+      host_groups: '{{ all_srv_hostgroups }}'
 
   - name: loop the csv file for host creation
     include_tasks: import-hosts-csv-loop.yml

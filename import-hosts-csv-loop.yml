@@ -2,11 +2,33 @@
 - name: prepare host facts
   set_fact:
     srv_templates: "{{ csv.srv_template.split(',') }}"
-    srv_location: "{{ csv.srv_location | default(default_location, true) }}"
-    host_groups: "{{ csv.srv_hostgroup.split(',')  + [ default_all_hostgroup ] + [ srv_location ] }}"
     srv_tags: "{{ csv.srv_tag.split(',')}}"
     interface_type: "{{ csv.srv_type  | default(default_host_type) }}"
     snmp_community: "{{ csv.srv_snmp_community | default(default_snmp_community, true) }}"
+
+- name: pre-process srv_location
+  set_fact:
+    srv_location: "{{ csv.srv_location }}"
+  when: csv.srv_location|length > 0
+
+- name: pre-process srv_location default
+  set_fact:
+    srv_location: "{{ default_location }}"
+  when: csv.srv_location|length == 0
+
+- name: process location fact for ALERTED hosts 
+  set_fact:
+    srv_location: "{{ alert_location_prefix }}/{{ srv_location }}"
+  when: no_alert_tag not in csv.srv_tag
+
+- name: process location fact for NOT alerted hosts 
+  set_fact:
+    srv_location: "{{ no_alert_location_prefix }}/{{ srv_location }}"
+  when: no_alert_tag in csv.srv_tag
+
+- name: process host_groups facts
+  set_fact:
+    host_groups: "{{ csv.srv_hostgroup.split(',')  + [ default_all_hostgroup ] + [ srv_location ] }}"
 
 - name: set csv filename tag
   set_fact: 
@@ -26,7 +48,7 @@
     srv_templates: "{{ default_agent_template }}"
   when: srv_templates[0] == '' and csv.srv_check_type == 'agent'
 
-- name: set default  template to {{ default_agent_template }}
+- name: set default  template to {{ default_snmp_template }}
   set_fact:
     srv_templates: "{{ default_snmp_template }}"
   when: srv_templates[0] == '' and csv.srv_check_type == 'snmp'

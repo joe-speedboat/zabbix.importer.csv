@@ -34,6 +34,7 @@ CSV FORMAT
     * optional 
       eg: tag1,tag2:99,tag3:value3
       note: short names, no special chars
+            if alert=none: srv_location will be modified from srv_location to noAlert/srv_location
   * srv_location
     * optional
       eg: LaaxRocksRz
