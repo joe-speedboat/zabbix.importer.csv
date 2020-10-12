@@ -16,15 +16,23 @@
     srv_location: "{{ default_location }}"
   when: csv.srv_location|length == 0
 
+- name: prepare host location groups for maintain_alert_tags: {{ maintain_alert_tags }}
+  block:
+  - name: process location fact for ALERTED hosts 
+    set_fact:
+      srv_location: "{{ alert_location_prefix }}/{{ srv_location }}"
+    when: no_alert_tag not in csv.srv_tag
+
+  - name: process location fact for NOT alerted hosts 
+    set_fact:
+      srv_location: "{{ no_alert_location_prefix }}/{{ srv_location }}"
+    when: no_alert_tag in csv.srv_tag
+  when: maintain_alert_tags|bool
+
 - name: process location fact for ALERTED hosts 
   set_fact:
-    srv_location: "{{ alert_location_prefix }}/{{ srv_location }}"
-  when: no_alert_tag not in csv.srv_tag
-
-- name: process location fact for NOT alerted hosts 
-  set_fact:
-    srv_location: "{{ no_alert_location_prefix }}/{{ srv_location }}"
-  when: no_alert_tag in csv.srv_tag
+    srv_location: "{{ srv_location }}"
+  when: not maintain_alert_tags|bool
 
 - name: process host_groups facts
   set_fact:
